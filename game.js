@@ -12,7 +12,7 @@ addEventListener('resize', resize);
 resize();
 
 const keys = {};
-addEventListener('keydown', e => keys[e.code] = true);
+addEventListener('keydown', e => { keys[e.code] = true; if (e.code === 'KeyR') reset(); });
 addEventListener('keyup', e => keys[e.code] = false);
 
 function bindBtn(id, key) {
@@ -33,7 +33,7 @@ document.getElementById('restart').onclick = reset;
 const gravity = 0.55;
 const wheelRadius = 16;
 const suspensionRest = 54;
-const suspensionStrength = 0.15;
+const suspensionStrength = 0.20;
 const suspensionDamping = 0.72;
 
 let terrain = [];
@@ -151,20 +151,30 @@ function updateBike() {
   if (leanLeft) bike.angularVelocity -= 0.018;
   if (leanRight) bike.angularVelocity += 0.018;
 
-  spring(rear, frame, suspensionRest);
-  spring(front, frame, suspensionRest);
+  // Suspension and chassis constraints.
+  // Several small iterations keep the motorcycle from "breaking" or stretching
+  // when it lands hard or flips over.
+  for (let k = 0; k < 4; k++) {
+    spring(rear, frame, suspensionRest);
+    spring(front, frame, suspensionRest);
 
-  const axleDx = front.x - rear.x;
-  const axleDy = front.y - rear.y;
-  const axleDist = Math.max(1, Math.hypot(axleDx, axleDy));
-  const targetWheelBase = 82;
-  const correction = (axleDist - targetWheelBase) * 0.5;
-  const nx = axleDx / axleDist;
-  const ny = axleDy / axleDist;
-  rear.x += nx * correction;
-  rear.y += ny * correction;
-  front.x -= nx * correction;
-  front.y -= ny * correction;
+    const axleDx = front.x - rear.x;
+    const axleDy = front.y - rear.y;
+    const axleDist = Math.max(1, Math.hypot(axleDx, axleDy));
+    const targetWheelBase = 82;
+    const correction = (axleDist - targetWheelBase) * 0.5;
+    const nx = axleDx / axleDist;
+    const ny = axleDy / axleDist;
+    rear.x += nx * correction;
+    rear.y += ny * correction;
+    front.x -= nx * correction;
+    front.y -= ny * correction;
+
+    const midXc = (rear.x + front.x) / 2;
+    const midYc = (rear.y + front.y) / 2 - 46;
+    frame.x += (midXc - frame.x) * 0.18;
+    frame.y += (midYc - frame.y) * 0.18;
+  }
 
   bike.angle = Math.atan2(front.y - rear.y, front.x - rear.x);
 
@@ -185,9 +195,15 @@ function updateBike() {
   frame.x += (midX - frame.x) * 0.035;
   frame.y += (midY - 48 - frame.y) * 0.035;
 
+  // Do not crash only because the bike rotated in the air.
+  // Crash happens only when rider's head/torso actually hits the ground.
   const headX = frame.x + Math.cos(bike.angle - Math.PI / 2) * 36;
   const headY = frame.y + Math.sin(bike.angle - Math.PI / 2) * 36;
-  if (headY > getGround(headX).y - 8 || Math.abs(bike.angle) > Math.PI * 0.82) {
+  const bodyX = frame.x + Math.cos(bike.angle - Math.PI / 2) * 18;
+  const bodyY = frame.y + Math.sin(bike.angle - Math.PI / 2) * 18;
+  const headHit = headY > getGround(headX).y - 5;
+  const bodyHit = bodyY > getGround(bodyX).y - 2;
+  if ((headHit || bodyHit) && (rear.contact || front.contact)) {
     crashed = true;
   }
 
@@ -315,7 +331,7 @@ function drawUI() {
 
   ctx.textAlign = 'left';
   ctx.font = '15px Arial';
-  ctx.fillText('← brake | → gas | A/D lean', 14, 28);
+  ctx.fillText('← brake | → gas | A/D lean | R restart', 14, 28);
   ctx.fillText('Distance: ' + Math.floor(bike.distance / 10) + ' m', 14, 50);
 
   if (crashed) {
