@@ -1,70 +1,30 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Moto Hill Physics</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #f7f7f7;
-      font-family: Arial, sans-serif;
-      touch-action: none;
-    }
-    canvas {
-      display: block;
-      background: #fff;
-    }
-    .ui {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 120px;
-      pointer-events: none;
-    }
-    .btn {
-      position: absolute;
-      bottom: 16px;
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      border: 2px solid #222;
-      background: rgba(255,255,255,.75);
-      font-size: 13px;
-      font-weight: bold;
-      pointer-events: auto;
-      user-select: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #brake { left: 16px; }
-    #gas { right: 16px; }
-    #leanL { left: 105px; }
-    #leanR { right: 105px; }
-    #restart {
-      position: fixed;
-      top: 12px;
-      left: 12px;
-      padding: 9px 12px;
-      border: 1px solid #222;
-      background: white;
-      border-radius: 8px;
-      font-weight: bold;
-    }
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Moto Ridge</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <canvas id="game"></canvas>
-  <button id="restart">Restart</button>
-  <div class="ui">
-    <div class="btn" id="brake">BRAKE</div>
-    <div class="btn" id="leanL">◀</div>
-    <div class="btn" id="leanR">▶</div>
-    <div class="btn" id="gas">GAS</div>
+  <div class="hud">
+    <div><b>MOTO RIDGE</b><span id="meters">0 м</span></div>
+    <div><span id="time">00:00.00</span><span id="best"></span></div>
+  </div>
+  <div id="message" class="message hidden">
+    <h1>CRASH</h1>
+    <p>Нажми Restart или R</p>
+  </div>
+  <button id="restart" class="restart">Restart</button>
+  <div class="keys">← тормоз · → газ · A/D баланс · R рестарт</div>
+  <div class="touch left">
+    <button data-key="ArrowLeft">⟵</button>
+    <button data-key="KeyA">A</button>
+  </div>
+  <div class="touch right">
+    <button data-key="KeyD">D</button>
+    <button data-key="ArrowRight">⟶</button>
   </div>
   <script src="game.js"></script>
 </body>
